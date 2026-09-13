@@ -3,8 +3,8 @@
 import { useState, useEffect, useTransition, Suspense } from 'react';
 import { useSearchParams } from 'next/navigation';
 import { getMenuCatalogAction } from '@/actions/menu-actions';
-import { getStoreConfigAction } from '@/actions/admin-actions';
-import { Category, Product, CafeTable, Store } from '@/types/database';
+import { resolveTableAction } from '@/actions/admin-actions';
+import { Category, Product, PublicTableInfo, Store } from '@/types/database';
 import { CartItem } from '@/types/order';
 import { CustomerHeader } from '@/components/customer/customer-header';
 import { ItemModal } from '@/components/customer/item-modal';
@@ -13,12 +13,12 @@ import { Search, Plus, Sparkles, Coffee } from 'lucide-react';
 
 function CustomerMenuContent() {
   const searchParams = useSearchParams();
-  const token = searchParams.get('tableToken') || 'table-01-token';
+  const token = searchParams.get('tableToken') || '';
 
   const [categories, setCategories] = useState<Category[]>([]);
   const [products, setProducts] = useState<Product[]>([]);
   const [store, setStore] = useState<Store | null>(null);
-  const [table, setTable] = useState<CafeTable | null>(null);
+  const [table, setTable] = useState<PublicTableInfo | null>(null);
   const [selectedCat, setSelectedCat] = useState<string>('all');
   const [searchQuery, setSearchQuery] = useState('');
   const [selectedProduct, setSelectedProduct] = useState<Product | null>(null);
@@ -27,18 +27,17 @@ function CustomerMenuContent() {
 
   useEffect(() => {
     startTransition(async () => {
-      const [menuRes, configRes] = await Promise.all([
+      // resolveTableAction returns only this customer's own table. The
+      // previous code fetched every table and matched client-side, which
+      // shipped all qr_tokens to every customer's browser.
+      const [menuRes, resolved] = await Promise.all([
         getMenuCatalogAction(),
-        getStoreConfigAction(),
+        resolveTableAction(token),
       ]);
       setCategories(menuRes.categories);
       setProducts(menuRes.products);
-      setStore(configRes.store);
-
-      const foundTable =
-        configRes.tables.find((t) => t.qr_token === token) ||
-        configRes.tables[0];
-      setTable(foundTable);
+      setStore(resolved?.store ?? null);
+      setTable(resolved?.table ?? null);
     });
   }, [token]);
 
@@ -244,9 +243,8 @@ function CustomerMenuContent() {
 
       {/* Floating Cart & Sheet Modal */}
       <CartSheet
-        storeId={store?.id || '11111111-1111-1111-1111-111111111111'}
-        tableId={table?.id || '22222222-2222-2222-2222-000000000001'}
-        tableNumber={table?.table_number || 'Bàn 01'}
+        qrToken={token}
+        tableNumber={table?.table_number || 'Bàn'}
         items={cartItems}
         onUpdateQuantity={handleUpdateQuantity}
         onRemoveItem={handleRemoveItem}

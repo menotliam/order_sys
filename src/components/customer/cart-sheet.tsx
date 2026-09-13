@@ -18,8 +18,8 @@ import { useRouter } from 'next/navigation';
 import { createOrderAction } from '@/actions/order-actions';
 
 interface CartSheetProps {
-  storeId: string;
-  tableId: string;
+  /** Identifies the table to the server. The client never picks a table id. */
+  qrToken: string;
   tableNumber: string;
   items: CartItem[];
   onUpdateQuantity: (idx: number, newQty: number) => void;
@@ -28,8 +28,7 @@ interface CartSheetProps {
 }
 
 export function CartSheet({
-  storeId,
-  tableId,
+  qrToken,
   tableNumber,
   items,
   onUpdateQuantity,
@@ -65,8 +64,7 @@ export function CartSheet({
 
     try {
       const res = await createOrderAction({
-        store_id: storeId,
-        table_id: tableId,
+        qr_token: qrToken,
         payment_method: paymentMethod,
         customer_name: customerName.trim() || `Khách (${tableNumber})`,
         customer_phone: customerPhone.trim(),

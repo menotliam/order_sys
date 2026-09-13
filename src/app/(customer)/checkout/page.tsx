@@ -3,7 +3,7 @@
 import { useState, useEffect, useTransition, Suspense } from 'react';
 import { useSearchParams, useRouter } from 'next/navigation';
 import { getOrderByIdAction } from '@/actions/order-actions';
-import { getStoreConfigAction } from '@/actions/admin-actions';
+import { getPublicStoreAction } from '@/actions/admin-actions';
 import { Order, Store } from '@/types/database';
 import { VietQRDisplay } from '@/components/customer/vietqr-display';
 import {
@@ -31,10 +31,10 @@ function CheckoutContent() {
     startTransition(async () => {
       const [orderData, storeData] = await Promise.all([
         getOrderByIdAction(orderId),
-        getStoreConfigAction(),
+        getPublicStoreAction(),
       ]);
       setOrder(orderData);
-      setStore(storeData.store);
+      setStore(storeData);
     });
   }, [orderId, router]);
 

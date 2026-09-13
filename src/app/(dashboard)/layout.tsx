@@ -8,13 +8,15 @@ import {
   Home,
 } from 'lucide-react';
 import { AudioAlertToggle } from '@/components/dashboard/audio-toggle';
-import { mockDb } from '@/lib/supabase/mock-data';
+import { getStoreConfigAction } from '@/actions/admin-actions';
 
-export default function DashboardLayout({
+export default async function DashboardLayout({
   children,
 }: {
   children: React.ReactNode;
 }) {
+  const { store } = await getStoreConfigAction();
+
   return (
     <div className="min-h-screen bg-[#0A0F1D] text-[#E2E8F0] flex flex-col justify-between">
       {/* Top Header */}
@@ -29,7 +31,7 @@ export default function DashboardLayout({
             </Link>
             <div>
               <h1 className="font-plex-sans text-lg font-bold text-white flex items-center gap-2">
-                {mockDb.store.name}
+                {store.name}
                 <span className="text-[10px] font-plex-mono px-1.5 py-0.5 rounded bg-amber-500/10 text-amber-400 border border-amber-500/30">
                   STAFF DASHBOARD
                 </span>

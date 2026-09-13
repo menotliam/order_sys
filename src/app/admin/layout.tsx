@@ -20,8 +20,7 @@ import {
   Flame,
   ShieldCheck,
 } from 'lucide-react';
-import { mockDb } from '@/lib/supabase/mock-data';
-import { simulateSecurityEventAction } from '@/actions/admin-actions';
+import { simulateSecurityEventAction, getStoreConfigAction } from '@/actions/admin-actions';
 
 const SIMULATE_EVENTS = [
   {
@@ -57,6 +56,8 @@ export default function AdminSocLayout({
 }) {
   const pathname = usePathname();
   const [showAttackMenu, setShowAttackMenu] = useState(false);
+  const [storeName, setStoreName] = useState('—');
+  const [audioAlertEnabled, setAudioAlertEnabled] = useState(false);
   const [isPending, startTransition] = useTransition();
   const [currentTime, setCurrentTime] = useState('');
   const [utcTime, setUtcTime] = useState('');
@@ -82,6 +83,15 @@ export default function AdminSocLayout({
     return () => clearInterval(interval);
   }, []);
 
+  useEffect(() => {
+    getStoreConfigAction()
+      .then(({ store }) => {
+        setStoreName(store.name);
+        setAudioAlertEnabled(store.security_thresholds?.audio_alert_enabled ?? false);
+      })
+      .catch(() => setStoreName('—'));
+  }, []);
+
   const handleSimulate = (eventType: string) => {
     setShowAttackMenu(false);
     startTransition(async () => {
@@ -91,7 +101,7 @@ export default function AdminSocLayout({
         duration: 4500,
         icon: <Siren className="w-4 h-4 text-[#FF1744]" />,
       });
-      if (mockDb.store.security_thresholds.audio_alert_enabled) {
+      if (audioAlertEnabled) {
         try {
           const ctx = new (window.AudioContext || (window as any).webkitAudioContext)();
           const osc = ctx.createOscillator();
@@ -181,7 +191,7 @@ export default function AdminSocLayout({
                 </span>
               </div>
               <p className="text-[11px] text-[#64748B] font-plex-mono hidden sm:flex items-center gap-2 mt-0.5">
-                <span>{mockDb.store.name}</span>
+                <span>{storeName}</span>
                 <span>•</span>
                 <span className="text-[#8E9EB5]">Live Threat Telemetry Feed</span>
               </p>
