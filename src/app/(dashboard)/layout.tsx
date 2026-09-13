@@ -6,9 +6,11 @@ import {
   QrCode,
   ShieldAlert,
   Home,
+  LogOut,
 } from 'lucide-react';
 import { AudioAlertToggle } from '@/components/dashboard/audio-toggle';
 import { getStoreConfigAction } from '@/actions/admin-actions';
+import { signOutAction } from '@/actions/auth-actions';
 
 export default async function DashboardLayout({
   children,
@@ -60,6 +62,16 @@ export default async function DashboardLayout({
             >
               <Home className="w-4 h-4" />
             </Link>
+
+            <form action={signOutAction}>
+              <button
+                type="submit"
+                title="Đăng xuất"
+                className="p-2 rounded-xl bg-slate-900 border border-slate-800 text-slate-400 hover:text-white"
+              >
+                <LogOut className="w-4 h-4" />
+              </button>
+            </form>
           </div>
         </div>
       </header>

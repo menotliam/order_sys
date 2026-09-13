@@ -10,6 +10,7 @@ import {
   Radio,
   Home,
   Store,
+  LogOut,
   Siren,
   Activity,
   Settings,
@@ -21,6 +22,7 @@ import {
   ShieldCheck,
 } from 'lucide-react';
 import { simulateSecurityEventAction, getStoreConfigAction } from '@/actions/admin-actions';
+import { signOutAction } from '@/actions/auth-actions';
 
 const SIMULATE_EVENTS = [
   {
@@ -214,6 +216,15 @@ export default function AdminSocLayout({
               <Radio className="w-3.5 h-3.5 text-emerald-400 animate-pulse" />
               <span>SENSOR: ACTIVE</span>
             </div>
+
+            <button
+              onClick={() => startTransition(async () => { await signOutAction(); })}
+              title="Đăng xuất"
+              className="px-2.5 py-1.5 bg-[rgba(20,27,45,0.5)] border border-[#1E293B] hover:border-[#00E5FF]/40 text-[#64748B] hover:text-[#00E5FF] text-[11px] font-plex-mono flex items-center gap-1.5 transition-colors cursor-pointer"
+            >
+              <LogOut className="w-3.5 h-3.5" />
+              <span className="hidden sm:inline">LOGOUT</span>
+            </button>
 
             {/* SIMULATE ATTACK Tactical Dropdown */}
             <div className="relative">

@@ -3,6 +3,7 @@
 import { revalidatePath } from 'next/cache';
 import { createAdminClient } from '@/lib/supabase/admin';
 import { getRequestContext, writeAuditLog } from '@/lib/supabase/context';
+import { requireStaff } from '@/lib/auth';
 import { CreateOrderInput, CreateOrderResponse } from '@/types/order';
 import { Order, OrderStatus } from '@/types/database';
 
@@ -99,6 +100,8 @@ export async function createOrderAction(
 
 /** Layer 2: staff eyeball the customer at the table, then release to the bar. */
 export async function approvePayLaterAction(orderId: string): Promise<boolean> {
+  if (!(await requireStaff('approvePayLaterAction'))) return false;
+
   const supabase = createAdminClient();
 
   const { data, error } = await supabase
@@ -132,6 +135,8 @@ export async function updateOrderStatusAction(
   orderId: string,
   newStatus: OrderStatus
 ): Promise<boolean> {
+  if (!(await requireStaff('updateOrderStatusAction'))) return false;
+
   const supabase = createAdminClient();
 
   const { data, error } = await supabase
@@ -239,6 +244,8 @@ export async function getOrderByIdAction(orderId: string): Promise<Order | null>
 }
 
 export async function getAllOrdersAction(): Promise<Order[]> {
+  if (!(await requireStaff('getAllOrdersAction'))) return [];
+
   const supabase = createAdminClient();
   const { data } = await supabase
     .from('orders')

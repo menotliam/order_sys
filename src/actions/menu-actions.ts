@@ -3,6 +3,7 @@
 import { revalidatePath } from 'next/cache';
 import { createAdminClient } from '@/lib/supabase/admin';
 import { writeAuditLog } from '@/lib/supabase/context';
+import { requireStaff } from '@/lib/auth';
 import { Category, Product } from '@/types/database';
 
 export async function getMenuCatalogAction(): Promise<{
@@ -26,6 +27,9 @@ export async function toggleProductAvailabilityAction(
   productId: string,
   newAvailability: boolean
 ): Promise<boolean> {
+  const profile = await requireStaff('toggleProductAvailabilityAction');
+  if (!profile) return false;
+
   const supabase = createAdminClient();
 
   const { data, error } = await supabase
@@ -44,7 +48,8 @@ export async function toggleProductAvailabilityAction(
     event_type: 'MENU_ITEM_STOCK_TOGGLED',
     category: 'INTEGRITY',
     severity: 'INFO',
-    actor_type: 'staff',
+    actor_type: profile.role === 'admin' ? 'admin' : 'staff',
+    actor_id: profile.id,
     message: `${data.name} được chuyển sang trạng thái ${
       newAvailability ? 'Còn hàng' : 'Hết hàng'
     }.`,

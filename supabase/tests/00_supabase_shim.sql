@@ -28,8 +28,9 @@ DO $$ BEGIN CREATE ROLE service_role NOLOGIN BYPASSRLS;
 EXCEPTION WHEN duplicate_object THEN NULL; END $$;
 
 CREATE TABLE IF NOT EXISTS auth.users (
-  id    UUID PRIMARY KEY DEFAULT gen_random_uuid(),
-  email TEXT
+  id                  UUID PRIMARY KEY DEFAULT gen_random_uuid(),
+  email               TEXT,
+  raw_user_meta_data  JSONB DEFAULT '{}'::jsonb
 );
 
 CREATE OR REPLACE FUNCTION auth.uid() RETURNS UUID

@@ -3,6 +3,7 @@
 import { revalidatePath } from 'next/cache';
 import { createAdminClient } from '@/lib/supabase/admin';
 import { getActiveStoreId, writeAuditLog } from '@/lib/supabase/context';
+import { requireStaff, requireAdmin } from '@/lib/auth';
 import {
   SecurityLog,
   Store,
@@ -117,6 +118,10 @@ export async function getStoreConfigAction(): Promise<{
   store: Store;
   tables: CafeTable[];
 }> {
+  if (!(await requireStaff('getStoreConfigAction'))) {
+    throw new Error('Không có quyền truy cập cấu hình cửa hàng.');
+  }
+
   const supabase = createAdminClient();
   const { data: store } = await supabase
     .from('stores')
@@ -139,6 +144,8 @@ export async function getSocTelemetryLogsAction(
   filterCategory?: string,
   searchQuery?: string
 ): Promise<SecurityLog[]> {
+  if (!(await requireAdmin('getSocTelemetryLogsAction'))) return [];
+
   const storeId = await getActiveStoreId();
   if (!storeId) return [];
 
@@ -167,6 +174,10 @@ export async function getPlatformMetricsAction(): Promise<{
   activeTablesCount: number;
   storeName: string;
 }> {
+  if (!(await requireAdmin('getPlatformMetricsAction'))) {
+    throw new Error('Không có quyền xem số liệu hệ thống.');
+  }
+
   const supabase = createAdminClient();
   const storeId = await getActiveStoreId();
 
@@ -216,6 +227,10 @@ export async function getOperationsOverviewAction(): Promise<{
   totalRevenue: number;
   totalOrders: number;
 }> {
+  if (!(await requireAdmin('getOperationsOverviewAction'))) {
+    return { tables: [], cashflow: [], totalRevenue: 0, totalOrders: 0 };
+  }
+
   const storeId = await getActiveStoreId();
   if (!storeId) {
     return { tables: [], cashflow: [], totalRevenue: 0, totalOrders: 0 };
@@ -266,6 +281,9 @@ export async function getOperationsOverviewAction(): Promise<{
 export async function resetTableSecurityAction(
   tableId: string
 ): Promise<{ success: boolean; table?: CafeTable }> {
+  const profile = await requireStaff('resetTableSecurityAction');
+  if (!profile) return { success: false };
+
   const supabase = createAdminClient();
 
   const { data: table } = await supabase
@@ -284,7 +302,8 @@ export async function resetTableSecurityAction(
     event_type: 'RATE_LIMIT_EXEMPTION_GRANTED',
     category: 'SPAM',
     severity: 'WARNING',
-    actor_type: 'staff',
+    actor_type: profile.role === 'admin' ? 'admin' : 'staff',
+    actor_id: profile.id,
     message: `Tạm bỏ qua giới hạn tần suất cho ${table.table_number} trong 15 phút.`,
     metadata: { expires_at: expiresAt, table_number: table.table_number },
   });
@@ -340,6 +359,8 @@ const SIMULATED_EVENTS: Record<
 };
 
 export async function simulateSecurityEventAction(eventType: string): Promise<boolean> {
+  if (!(await requireAdmin('simulateSecurityEventAction'))) return false;
+
   const storeId = await getActiveStoreId();
   const preset = SIMULATED_EVENTS[eventType];
   if (!storeId || !preset) return false;
@@ -361,6 +382,9 @@ export async function simulateSecurityEventAction(eventType: string): Promise<bo
 export async function updateSecurityThresholdsAction(
   thresholds: Partial<SecurityThresholds>
 ): Promise<boolean> {
+  const profile = await requireAdmin('updateSecurityThresholdsAction');
+  if (!profile) return false;
+
   const supabase = createAdminClient();
   const storeId = await getActiveStoreId();
   if (!storeId) return false;
@@ -386,6 +410,7 @@ export async function updateSecurityThresholdsAction(
     category: 'INTEGRITY',
     severity: 'WARNING',
     actor_type: 'admin',
+    actor_id: profile.id,
     message: 'Ngưỡng bảo mật Layer-1 được cập nhật.',
     metadata: { old_config: current?.security_thresholds ?? {}, new_config: merged },
   });
@@ -400,6 +425,9 @@ export async function updateStoreVietQRAction(
   accountNo: string,
   accountName: string
 ): Promise<boolean> {
+  const profile = await requireAdmin('updateStoreVietQRAction');
+  if (!profile) return false;
+
   const supabase = createAdminClient();
   const storeId = await getActiveStoreId();
   if (!storeId) return false;
@@ -428,6 +456,7 @@ export async function updateStoreVietQRAction(
     category: 'INTEGRITY',
     severity: 'WARNING',
     actor_type: 'admin',
+    actor_id: profile.id,
     message: `Cấu hình nhận tiền VietQR được thay đổi: ${accountNo} (${bankId}).`,
     metadata: {
       old_config: {
