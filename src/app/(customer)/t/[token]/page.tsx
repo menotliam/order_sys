@@ -1,7 +1,7 @@
 import Link from 'next/link';
 import { Coffee, Utensils, ShieldCheck, ArrowRight, QrCode } from 'lucide-react';
-import { mockDb } from '@/lib/supabase/mock-data';
-import { redirect } from 'next/navigation';
+import { resolveTableAction } from '@/actions/admin-actions';
+import { notFound } from 'next/navigation';
 
 interface TableLandingProps {
   params: Promise<{ token: string }>;
@@ -10,10 +10,12 @@ interface TableLandingProps {
 export default async function TableLandingPage({ params }: TableLandingProps) {
   const { token } = await params;
 
-  // Find table from token
-  const table =
-    mockDb.tables.find((t) => t.qr_token === token) ||
-    mockDb.tables[0]; // fallback Bàn 01
+  // Resolve server-side. An unknown token is refused rather than silently
+  // falling back to table 01, and the attempt is logged as a scan probe.
+  const resolved = await resolveTableAction(token);
+  if (!resolved) notFound();
+
+  const { store, table } = resolved;
 
   return (
     <div className="min-h-screen bg-[#0A0F1D] text-white flex flex-col justify-between p-6">
@@ -24,7 +26,7 @@ export default async function TableLandingPage({ params }: TableLandingProps) {
             <Coffee className="w-5 h-5 text-white" />
           </div>
           <span className="font-plex-sans font-bold text-lg">
-            {mockDb.store.name}
+            {store.name}
           </span>
         </div>
 
@@ -45,7 +47,7 @@ export default async function TableLandingPage({ params }: TableLandingProps) {
             Chào mừng bạn đến với
           </span>
           <h1 className="font-plex-sans text-4xl font-bold text-white leading-tight">
-            {mockDb.store.name}
+            {store.name}
           </h1>
           <div className="mt-3 inline-flex items-center gap-2 px-4 py-1.5 rounded-full bg-slate-900 border border-slate-800 font-plex-mono text-base font-bold text-cyan-400">
             <span>VỊ TRÍ: {table.table_number.toUpperCase()}</span>
@@ -59,7 +61,7 @@ export default async function TableLandingPage({ params }: TableLandingProps) {
 
         <div className="pt-4">
           <Link
-            href={`/menu?tableToken=${table.qr_token}`}
+            href={`/menu?tableToken=${token}`}
             className="w-full py-4 px-6 rounded-2xl bg-gradient-to-r from-cyan-500 to-blue-600 hover:from-cyan-400 hover:to-blue-500 text-slate-950 font-plex-sans text-xl font-bold flex items-center justify-center gap-3 shadow-xl shadow-cyan-500/25 transition-all"
           >
             <span>BẮT ĐẦU GỌI MÓN</span>
