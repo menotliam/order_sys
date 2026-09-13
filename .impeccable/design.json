@@ -1,0 +1,43 @@
+{
+  "schemaVersion": 2,
+  "generatedAt": "2026-08-05T08:58:00Z",
+  "title": "Design System: order_sys",
+  "extensions": {
+    "colorMeta": {
+      "primary": { "role": "primary", "displayName": "Orchid", "canonical": "#E5BDDF", "tonalRamp": ["#332230", "#4A3246", "#734E6D", "#996A91", "#BF85B6", "#E5BDDF", "#F2D9EE", "#FFF0FB"] },
+      "background": { "role": "neutral", "displayName": "Jet Black", "canonical": "#1D1D1D", "tonalRamp": ["#0F0F0F", "#171717", "#1D1D1D", "#333333", "#4D4D4D", "#666666", "#808080", "#999999"] }
+    }
+  },
+  "components": [
+    {
+      "name": "SIEM Panel (Interactive)",
+      "kind": "card",
+      "refersTo": "siem-panel",
+      "description": "Tactical glassmorphic panel with neon glow on hover.",
+      "html": "<div class=\"ds-siem-panel-interactive\">[TELEMETRY_DATA]</div>",
+      "css": ".ds-siem-panel-interactive { background: rgba(29, 29, 29, 0.5); backdrop-filter: blur(12px); border: 1px solid #333333; color: #E2E8F0; padding: 16px; font-family: ui-monospace, monospace; transition: all 0.2s ease; } .ds-siem-panel-interactive:hover { border-color: rgba(229, 189, 223, 0.4); box-shadow: 0 0 16px rgba(229, 189, 223, 0.15); }"
+    }
+  ],
+  "narrative": {
+    "northStar": "The Cyber Security Operations Center (SOC)",
+    "overview": "A hyper-focused, tactical command center with high-contrast data visualization. The interface prioritizes immediate data legibility over unnecessary decorations. It strictly adheres to a dark, tactical aesthetic that feels solid and secure.",
+    "keyCharacteristics": [
+      "Tactical and precise",
+      "High-contrast, strictly functional",
+      "Dark mode primary"
+    ],
+    "rules": [
+      { "name": "The Tactical Contrast Rule", "body": "Color is reserved for meaning. Large surfaces remain completely neutral; the Orchid accent is used sparingly to draw the eye to interactive or changing data.", "section": "colors" },
+      { "name": "The Telemetry Rule", "body": "Any changing numerical data, logs, or IDs must use the monospace font for tabular alignment and immediate tactical scanning.", "section": "typography" },
+      { "name": "The Flat-By-Default Rule", "body": "Surfaces are flat at rest. Shadows appear only as a response to state (hover, focus) in the form of neon glows.", "section": "elevation" }
+    ],
+    "dos": [
+      "Do use IBM Plex Mono for all changing metrics, IDs, and logs.",
+      "Do apply the Orchid accent strictly to interactive or high-priority states."
+    ],
+    "donts": [
+      "Don't use heavy drop shadows for structural depth.",
+      "Don't use border radiuses on tactical panels."
+    ]
+  }
+}

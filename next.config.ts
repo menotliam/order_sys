@@ -1,7 +1,20 @@
 import type { NextConfig } from "next";
 
 const nextConfig: NextConfig = {
-  /* config options here */
+  async redirects() {
+    return [
+      {
+        source: '/vietqr-config',
+        destination: '/admin/config',
+        permanent: true,
+      },
+      {
+        source: '/admin/vietqr-config',
+        destination: '/admin/config',
+        permanent: true,
+      },
+    ];
+  },
 };
 
 export default nextConfig;
